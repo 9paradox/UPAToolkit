@@ -100,7 +100,8 @@ public class UPAEditorWindow : EditorWindow {
 		// Init the textures correctly, won't cost performance if nothing to load
 		CurrentImg.LoadAllTexsFromMaps();
 		
-		EditorGUI.DrawRect (window.position, new Color32 (30,30,30,255));
+		Rect darkGreyBackground = new Rect(0, 0, window.position.width, window.position.height);
+		EditorGUI.DrawRect (darkGreyBackground, new Color32 (30,30,30,255));
 		
 		
 		#region Event handling
