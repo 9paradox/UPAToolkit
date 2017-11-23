@@ -15,8 +15,9 @@ public class UPADrawer : MonoBehaviour {
 	// VISUAL SETTINGS
 	
 	private static Color32 toolbarColor = new Color32 (50, 50, 50, 255);
-	
-	private static string[] gridBGStrings = new string[] {"Black", "White", "None"};
+    private static Color32 sideToolbarColor = new Color32(70, 70, 70, 125);
+
+    private static string[] gridBGStrings = new string[] {"Black", "White", "None"};
 	public static Color gridBGColor = Color.black;
 	
 	private static GUIStyle style = new GUIStyle();
@@ -30,10 +31,18 @@ public class UPADrawer : MonoBehaviour {
 	}
 
 
-	// DRAWING METHODS
+    //Color Lerp Settings
+    public const int totalLerpColors =8;
+    public static Color startColor = Color.black;
+    public static Color[] lerpColors = new Color[totalLerpColors];
+    public static Color endColor = Color.white;
+    // End Color Lerp Settings
 
-	// Draw an image inside the editor window
-	public static void DrawImage (UPAImage img) {
+
+    // DRAWING METHODS
+
+    // Draw an image inside the editor window
+    public static void DrawImage (UPAImage img) {
 		Rect texPos = img.GetImgRect();
 
 		Texture2D bg = new Texture2D (1,1);
@@ -104,7 +113,8 @@ public class UPADrawer : MonoBehaviour {
 	public static void DrawToolbar (Rect window, Vector2 mousePos) {
 
 		// Draw toolbar bg
-		EditorGUI.DrawRect ( new Rect (0,0, window.width, 40), toolbarColor );
+        EditorGUI.DrawRect(new Rect(0, 0, window.width, 40), toolbarColor);
+		EditorGUI.DrawRect ( new Rect (0, 40, 150, window.height), sideToolbarColor);
 		
 		if ( GUI.Button (new Rect (5, 4, 50, 30), "New") ) {
 			UPAImageCreationWindow.Init ();
@@ -119,12 +129,14 @@ public class UPADrawer : MonoBehaviour {
 		}
 
 		if (GUI.Button (new Rect (179, 6, 25, 25), "+")) {
-			CurrentImg.gridSpacing *= 1.2f;
+            CurrentImg.gridSpacing *= 1.2f;
+           //UPAEditorWindow.brushSize++;
 		}
 		if (GUI.Button (new Rect (209, 6, 25, 25), "-")) {
-			CurrentImg.gridSpacing *= 0.8f;
-			CurrentImg.gridSpacing -= 2;
-		}
+            CurrentImg.gridSpacing *= 0.8f;
+            CurrentImg.gridSpacing -= 2;
+            //UPAEditorWindow.brushSize--;
+        }
 		
 		CurrentImg.selectedColor = EditorGUI.ColorField (new Rect (250, 7, 70, 25), CurrentImg.selectedColor);
 		EditorGUI.DrawRect ( new Rect (303, 7, 20, 25), toolbarColor );
@@ -182,7 +194,10 @@ public class UPADrawer : MonoBehaviour {
 			style.fontSize = 15;
 			GUI.Label (new Rect (window.width/2f - 140, 60, 100, 30), "Click on a pixel to choose a color.", style);
 		}
-	}
+
+        DrawColorLerpPanel(window);
+
+    }
 
 	static void Callback (object obj) {
 		Debug.Log ("Selected: " + obj);
@@ -190,8 +205,33 @@ public class UPADrawer : MonoBehaviour {
 	static void Callback () {
 		Debug.Log ("No object passed");
 	}
-	
-	public static void DrawLayerPanel (Rect window) {
+
+
+    // Draw the color lerp toolbar
+    public static void DrawColorLerpPanel(Rect window)
+    {
+        
+        startColor = EditorGUI.ColorField(new Rect(30, 50, 70, 20), startColor);
+        int i = 0;
+        for(i = 0; i < totalLerpColors; i++)
+        {
+            lerpColors[i] = GUI.backgroundColor = getLerpColor(startColor,endColor,i);
+            if (GUI.Button(new Rect(30, 80+(i*30), 50, 20), " "))
+            {
+                CurrentImg.selectedColor = lerpColors[i];
+            }
+        }
+        endColor = EditorGUI.ColorField(new Rect(30, 80 + (i * 30), 70, 20), endColor);
+
+    }
+
+    public static Color getLerpColor(Color stc, Color enc, int amount)
+    {
+        float val = amount * 0.145f;
+        return Color.Lerp(stc, enc, val);
+    }
+
+        public static void DrawLayerPanel (Rect window) {
 		
 		style.imagePosition = ImagePosition.ImageAbove;
 		
